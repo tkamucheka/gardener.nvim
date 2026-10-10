@@ -1,11 +1,17 @@
 # gardener.nvim
 
-Tree-sitter parser management for Neovim, on the `main` branch of
-[nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter).
-gardener installs parsers, including on demand when a file of a new
-filetype is opened; registers custom parsers and keeps them registered across
-nvim-treesitter updates; and starts highlighting, folds, and indentation in
-every buffer whose parser is installed.
+Tree-sitter parser management for Neovim, built on the `main` branch of
+[nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter), which
+installs parsers but leaves starting them to the user.
+
+* Installs a list of parsers at startup, and the parser of any other
+  filetype when a file of that type is first opened.
+* Registers parsers that nvim-treesitter does not provide, and keeps them
+  registered across nvim-treesitter updates.
+* Maps filetypes to the languages that parse them.
+* Starts highlighting, and optionally folds and indentation, in every buffer
+  whose parser is installed, including a buffer whose parser was just
+  installed.
 
 ## Requirements
 
