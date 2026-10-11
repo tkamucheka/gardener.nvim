@@ -72,3 +72,7 @@ opts = {
 
 With `path`, gardener uses a local checkout and warns if its queries
 directory has no `highlights.scm`.
+
+## License
+
+MIT; see [LICENSE](LICENSE).
