@@ -2,8 +2,9 @@
 --
 -- Installs the parsers in ensure_installed and, if auto_install is set, the
 -- parser of any filetype that is opened; registers custom parsers and keeps
--- them registered across nvim-treesitter updates; maps filetypes to
--- languages; and starts highlighting, and optionally folds and indentation,
+-- them registered across nvim-treesitter updates; detects the filetypes of
+-- custom parsers by file extension and name; maps filetypes to languages;
+-- and starts highlighting, and optionally folds and indentation,
 -- in every buffer whose parser is installed. See README.md for the options.
 --
 -- ensure_installed forms:
@@ -38,6 +39,8 @@ local default_opts = {
 ---@class GardenerCustomParser
 ---@field install_info GardenerCustomInstallInfo?
 ---@field filetypes string[]?
+---@field extensions string[]?
+---@field filenames string[]?
 ---@field files string[]?
 ---@field url string?
 ---@field path string?
@@ -210,13 +213,15 @@ end
 ---@param custom_parsers table<string, GardenerCustomParser>|nil
 ---@param state GardenerState|nil
 ---@return table<string, GardenerCustomParserState>
----@return table<string, string>
+---@return table<string, string> filetype_to_lang
+---@return { extension: table<string, string>, filename: table<string, string> } detection
 local function normalize_custom_parsers(custom_parsers, state)
 	local normalized = {}
 	local aliases = {}
+	local detection = { extension = {}, filename = {} }
 
 	if type(custom_parsers) ~= "table" then
-		return normalized, aliases
+		return normalized, aliases, detection
 	end
 
 	for lang, spec in pairs(custom_parsers) do
@@ -253,11 +258,22 @@ local function normalize_custom_parsers(custom_parsers, state)
 				for _, ft in ipairs(filetypes) do
 					aliases[ft] = lang
 				end
+
+				-- Files are detected as the first filetype of the parser, or
+				-- as a filetype named after the language.
+				local filetype = filetypes[1] or lang
+				for _, extension in ipairs(normalize_string_list(spec.extensions)) do
+					local key = extension:gsub("^%.", "")
+					detection.extension[key] = filetype
+				end
+				for _, filename in ipairs(normalize_string_list(spec.filenames)) do
+					detection.filename[filename] = filetype
+				end
 			end
 		end
 	end
 
-	return normalized, aliases
+	return normalized, aliases, detection
 end
 
 ---@param custom_parsers table<string, GardenerCustomParserState>
@@ -496,8 +512,9 @@ function M.setup(input)
 		pending = {},
 	}
 
-	local custom_parsers, custom_aliases = normalize_custom_parsers(opts.custom_parsers, state)
+	local custom_parsers, custom_aliases, detection = normalize_custom_parsers(opts.custom_parsers, state)
 	register_custom_parsers(custom_parsers)
+	vim.filetype.add(detection)
 	for ft, lang in pairs(custom_aliases) do
 		filetype_to_lang[ft] = lang
 	end

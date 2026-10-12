@@ -8,6 +8,8 @@ installs parsers but leaves starting them to the user.
   filetype when a file of that type is first opened.
 * Registers parsers that nvim-treesitter does not provide, and keeps them
   registered across nvim-treesitter updates.
+* Detects the filetype of files that Neovim does not recognize, by
+  extension or file name, for custom parsers.
 * Maps filetypes to the languages that parse them.
 * Starts highlighting, and optionally folds and indentation, in every buffer
   whose parser is installed, including a buffer whose parser was just
@@ -54,7 +56,13 @@ With another plugin manager, install both plugins and call
 
 A custom parser takes the `install_info` of nvim-treesitter (`url` or `path`,
 and optionally `revision`, `branch`, `location`, `generate`, and `queries`)
-and the filetypes it serves:
+and, optionally:
+
+| Field | Meaning |
+|-------|---------|
+| `filetypes` | Filetypes that use the parser. Default: the filetype named after the language. |
+| `extensions` | File extensions, such as `"dotfile"`, detected as the first of `filetypes`. |
+| `filenames` | File names, such as `"Dotfile"`, detected as the first of `filetypes`. |
 
 ```lua
 opts = {
@@ -65,10 +73,14 @@ opts = {
         queries = "queries",
       },
       filetypes = { "dottr" },
+      extensions = { "dotfile" },
     },
   },
 }
 ```
+
+Files ending in `.dotfile` are then detected as the filetype `dottr`, and
+gardener installs and starts the `dottr` parser in them.
 
 With `path`, gardener uses a local checkout and warns if its queries
 directory has no `highlights.scm`.
