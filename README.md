@@ -1,3 +1,5 @@
+![A plant whose leaves are tree-sitter parsers](.github/banner.svg)
+
 # gardener.nvim
 
 Tree-sitter parser management for Neovim, built on the `main` branch of
